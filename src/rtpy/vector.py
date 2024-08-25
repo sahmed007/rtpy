@@ -43,7 +43,7 @@ class Vec3:
         return math.sqrt(self.length_squared())
 
     def length_squared(self) -> float:
-        return self.e[0] ** 2 + self.e[1] ** 2 + self.e[2] ** 2
+        return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
 
     def __str__(self) -> str:
         return f"{self.e[0]} {self.e[1]} {self.e[2]}"
