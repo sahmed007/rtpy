@@ -1,3 +1,7 @@
+from rtpy.color import Color, write_color
+import sys
+
+
 def main():
     # Image
 
@@ -9,20 +13,15 @@ def main():
     print(f"P3\n{image_width} {image_height}\n255")
 
     for j in range(image_height):
-        print(f"\rScanlines remaining: {image_height - j}")
+        print(f"\rScanlines remaining: {j}", file=sys.stderr, flush=True)
 
         for i in range(image_width):
-            r = i / (image_width - 1)
-            g = j / (image_height - 1)
-            b = 0.25
+            pixel_color = Color(
+                float(i) / (image_width - 1), float(j) / (image_height - 1), 0
+            )
+            write_color(pixel_color)
 
-            ir = int(255.999 * r)
-            ig = int(255.999 * g)
-            ib = int(255.999 * b)
-
-            print(f"{ir} {ig} {ib}")
-
-    print("\nDone.")
+    print("\nDone.", file=sys.stderr)
 
 
 if __name__ == "__main__":
