@@ -15,8 +15,8 @@ class Vec3:
     def z(self) -> float:
         return self.e[2]
 
-    def __neg__(self) -> Vec3:
-        return Vec3(-self.e[0], -self.e[1], -self.e[2])
+    def __neg__(self):
+        return Vec3(-self.x(), -self.y(), -self.z())
 
     def __getitem__(self, i: int) -> float:
         return self.e[i]

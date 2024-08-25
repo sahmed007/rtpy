@@ -1,15 +1,4 @@
-from rtpy.color import Color, write_color
-from rtpy.ray import Ray
-from rtpy.vector import (
-    Point3,
-    Vec3,
-    vec3_div,
-    vec3_add,
-    vec3_sub,
-    vec3_scalar_mul,
-    unit_vector,
-    dot,
-)
+from rtpy import *
 import sys
 import math
 
@@ -27,12 +16,10 @@ def hit_sphere(center: Point3, radius: float, r: Ray) -> float:
         return (-h - math.sqrt(discriminant)) / a
 
 
-def ray_color(r: Ray) -> Color:
-    t = hit_sphere(Point3(0, 0, -1), 0.5, r)
-
-    if t > 0.0:
-        N = unit_vector(vec3_sub(r.at(t), Vec3(0, 0, -1)))
-        return vec3_scalar_mul(0.5, Color(N.x() + 1, N.y() + 1, N.z() + 1))
+def ray_color(r: Ray, world: Hittable) -> Color:
+    hit, rec = world.hit(r, 0.0, math.inf)
+    if hit:
+        return vec3_scalar_mul(0.5, vec3_add(rec.normal, Color(1, 1, 1)))
 
     unit_direction = unit_vector(r.direction())
     a = 0.5 * (unit_direction.y() + 1.0)
@@ -51,6 +38,12 @@ def main():
     # Calculate the image height, ensuring it is at least 1
     image_height: int = int(image_width / aspect_ratio)
     image_height: int = max(1, image_height)
+
+    # World
+
+    world = HittableList()
+    world.add(Sphere(Point3(0, 0, -1), 0.5))
+    world.add(Sphere(Point3(0, -100.5, -1), 100))
 
     # Camera
 
@@ -96,7 +89,7 @@ def main():
                 ),
             )
             ray_direction: Vec3 = vec3_sub(pixel_center, camera_center)
-            pixel_color: Color = ray_color(Ray(camera_center, ray_direction))
+            pixel_color: Color = ray_color(Ray(camera_center, ray_direction), world)
             write_color(pixel_color)
 
     print("\nDone.", file=sys.stderr)
