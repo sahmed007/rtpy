@@ -1,12 +1,63 @@
 from rtpy.color import Color, write_color
+from rtpy.ray import Ray
+from rtpy.vector import (
+    Point3,
+    Vec3,
+    vec3_div,
+    vec3_add,
+    vec3_sub,
+    vec3_scalar_mul,
+    unit_vector,
+)
 import sys
+
+
+def ray_color(r: Ray) -> Color:
+    unit_direction = unit_vector(r.direction())
+    a = 0.5 * (unit_direction.y() + 1.0)
+    return vec3_add(
+        vec3_scalar_mul(1.0 - a, Color(1.0, 1.0, 1.0)),
+        vec3_scalar_mul(a, Color(0.5, 0.7, 1.0)),
+    )
 
 
 def main():
     # Image
 
-    image_width = 256
-    image_height = 256
+    aspect_ratio = 16.0 / 9.0
+    image_width = 400
+
+    # Calculate the image height, ensuring it is at least 1
+    image_height: int = int(image_width / aspect_ratio)
+    image_height: int = max(1, image_height)
+
+    # Camera
+
+    focal_length: float = 1.0
+    viewport_height: float = 2.0
+    viewport_width: float = viewport_height * (float(image_width) / image_height)
+    camera_center: Point3 = Point3(0, 0, 0)
+
+    # Calculate the vectors across the horizontal and down the vertical viewport edges
+    viewport_u: Vec3 = Vec3(viewport_width, 0, 0)
+    viewport_v: Vec3 = Vec3(0, -viewport_height, 0)
+
+    # Calculate the horizontal and vertical delta vectors from pixel to pixel
+    pixel_delta_u: Vec3 = vec3_div(viewport_u, image_width)
+    pixel_delta_v: Vec3 = vec3_div(viewport_v, image_height)
+
+    # Calculate the location of the upper left pixel
+    viewport_upper_left: Vec3 = vec3_sub(
+        camera_center,
+        vec3_add(
+            Vec3(0, 0, focal_length),
+            vec3_add(vec3_div(viewport_u, 2), vec3_div(viewport_v, 2)),
+        ),
+    )
+    pixel00_loc: Vec3 = vec3_add(
+        viewport_upper_left,
+        vec3_scalar_mul(0.5, vec3_add(pixel_delta_u, pixel_delta_v)),
+    )
 
     # Render
 
@@ -16,9 +67,15 @@ def main():
         print(f"\rScanlines remaining: {j}", file=sys.stderr, flush=True)
 
         for i in range(image_width):
-            pixel_color = Color(
-                float(i) / (image_width - 1), float(j) / (image_height - 1), 0
+            pixel_center: Vec3 = vec3_add(
+                pixel00_loc,
+                vec3_add(
+                    vec3_scalar_mul(i, pixel_delta_u),
+                    vec3_scalar_mul(j, pixel_delta_v),
+                ),
             )
+            ray_direction: Vec3 = vec3_sub(pixel_center, camera_center)
+            pixel_color: Color = ray_color(Ray(camera_center, ray_direction))
             write_color(pixel_color)
 
     print("\nDone.", file=sys.stderr)
