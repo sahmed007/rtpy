@@ -17,8 +17,8 @@ def hit_sphere(center: Point3, radius: float, r: Ray) -> float:
 
 
 def ray_color(r: Ray, world: Hittable) -> Color:
-    hit, rec = world.hit(r, 0.0, math.inf)
-    if hit:
+    rec = HitRecord()
+    if world.hit(r, Interval(0.0, math.inf), rec):
         return vec3_scalar_mul(0.5, vec3_add(rec.normal, Color(1, 1, 1)))
 
     unit_direction = unit_vector(r.direction())

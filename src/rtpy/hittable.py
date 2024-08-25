@@ -1,5 +1,6 @@
 from rtpy.ray import Ray
 from rtpy.vector import Vec3, Point3, dot
+from rtpy.interval import Interval
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -18,5 +19,5 @@ class HitRecord:
 
 class Hittable(ABC):
     @abstractmethod
-    def hit(self, r: Ray, ray_tmin: float, ray_tmax: float, rec: HitRecord) -> bool:
+    def hit(self, r: Ray, ray_t: Interval, rec: HitRecord) -> bool:
         pass
