@@ -15,6 +15,9 @@ class Interval:
     def surrounds(self, x: float) -> bool:
         return self.min < x and x < self.max
 
+    def clamp(self, x: float) -> float:
+        return max(self.min, min(x, self.max))
+
     empty = None
     universe = None
 
