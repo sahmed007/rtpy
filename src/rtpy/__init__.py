@@ -14,3 +14,4 @@ from .hittable import Hittable, HitRecord
 from .hittable_list import HittableList
 from .sphere import Sphere
 from .interval import Interval
+from .camera import Camera
