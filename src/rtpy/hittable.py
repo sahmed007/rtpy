@@ -1,13 +1,19 @@
 from rtpy.ray import Ray
-from rtpy.vector import Vec3, Point3
+from rtpy.vector import Vec3, Point3, dot
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 
+@dataclass
 class HitRecord:
-    def __init__(self, p: Point3, normal: Vec3, t: float):
-        self.p: Point3 = p
-        self.normal: Vec3 = normal
-        self.t: float = t
+    p: Point3
+    normal: Vec3
+    t: float
+    front_face: bool
+
+    def set_face_normal(self, r: Ray, outward_normal: Vec3):
+        self.front_face = dot(r.direction(), outward_normal) < 0
+        self.normal = outward_normal if self.front_face else (outward_normal.neg())
 
 
 class Hittable(ABC):
