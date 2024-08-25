@@ -11,20 +11,28 @@ from rtpy.vector import (
     dot,
 )
 import sys
+import math
 
 
-def hit_sphere(center: Point3, radius: float, r: Ray) -> bool:
-    oc = vec3_sub(center, r.origin())
+def hit_sphere(center: Point3, radius: float, r: Ray) -> float:
+    oc = vec3_sub(r.origin(), center)
     a = dot(r.direction(), r.direction())
-    b = 2.0 * dot(r.direction(), oc)
+    b = 2.0 * dot(oc, r.direction())
     c = dot(oc, oc) - radius * radius
     discriminant = b * b - 4 * a * c
-    return discriminant >= 0
+
+    if discriminant < 0:
+        return -1.0
+    else:
+        return (-b - math.sqrt(discriminant)) / (2.0 * a)
 
 
 def ray_color(r: Ray) -> Color:
-    if hit_sphere(Point3(0, 0, -1), 0.5, r):
-        return Color(1, 0, 0)
+    t = hit_sphere(Point3(0, 0, -1), 0.5, r)
+
+    if t > 0.0:
+        N = unit_vector(vec3_sub(r.at(t), Vec3(0, 0, -1)))
+        return vec3_scalar_mul(0.5, Color(N.x() + 1, N.y() + 1, N.z() + 1))
 
     unit_direction = unit_vector(r.direction())
     a = 0.5 * (unit_direction.y() + 1.0)
