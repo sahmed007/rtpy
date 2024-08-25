@@ -8,11 +8,24 @@ from rtpy.vector import (
     vec3_sub,
     vec3_scalar_mul,
     unit_vector,
+    dot,
 )
 import sys
 
 
+def hit_sphere(center: Point3, radius: float, r: Ray) -> bool:
+    oc = vec3_sub(center, r.origin())
+    a = dot(r.direction(), r.direction())
+    b = 2.0 * dot(r.direction(), oc)
+    c = dot(oc, oc) - radius * radius
+    discriminant = b * b - 4 * a * c
+    return discriminant >= 0
+
+
 def ray_color(r: Ray) -> Color:
+    if hit_sphere(Point3(0, 0, -1), 0.5, r):
+        return Color(1, 0, 0)
+
     unit_direction = unit_vector(r.direction())
     a = 0.5 * (unit_direction.y() + 1.0)
     return vec3_add(
