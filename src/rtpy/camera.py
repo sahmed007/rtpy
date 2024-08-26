@@ -9,7 +9,7 @@ from rtpy.vector import (
     vec3_sub,
     vec3_scalar_mul,
     unit_vector,
-    random_on_hemisphere,
+    random_unit_vector,
 )
 import math
 import sys
@@ -125,7 +125,6 @@ class Camera:
                 pixel_color = Color(0, 0, 0)
                 for _ in range(self._samples_per_pixel):
                     r = self.get_ray(i, j)
-                    # pixel_color = vec3_add(pixel_color, self.__ray_color(r, world))
                     pixel_color += self.__ray_color(r, self.MAX_DEPTH, world)
 
                 pixel_color = vec3_scalar_mul(self.pixel_samples_scale, pixel_color)
@@ -141,7 +140,7 @@ class Camera:
         rec: HitRecord = HitRecord()
 
         if world.hit(r, Interval(0.001, math.inf), rec):
-            direction: Vec3 = random_on_hemisphere(rec.normal)
+            direction: Vec3 = vec3_add(rec.normal, random_unit_vector())
             return vec3_scalar_mul(
                 0.5, self.__ray_color(Ray(rec.p, direction), depth - 1, world)
             )
