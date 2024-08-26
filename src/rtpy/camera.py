@@ -140,7 +140,7 @@ class Camera:
 
         rec: HitRecord = HitRecord()
 
-        if world.hit(r, Interval(0, math.inf), rec):
+        if world.hit(r, Interval(0.001, math.inf), rec):
             direction: Vec3 = random_on_hemisphere(rec.normal)
             return vec3_scalar_mul(
                 0.5, self.__ray_color(Ray(rec.p, direction), depth - 1, world)
