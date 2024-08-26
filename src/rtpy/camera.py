@@ -2,7 +2,15 @@ from rtpy.ray import Ray
 from rtpy.hittable import Hittable, HitRecord
 from rtpy.interval import Interval
 from rtpy.color import Color, write_color
-from rtpy.vector import Vec3, Point3, vec3_add, vec3_sub, vec3_scalar_mul, unit_vector
+from rtpy.vector import (
+    Vec3,
+    Point3,
+    vec3_add,
+    vec3_sub,
+    vec3_scalar_mul,
+    unit_vector,
+    random_on_hemisphere,
+)
 import math
 import sys
 import random
@@ -54,7 +62,9 @@ class Camera:
         # Calculate the viewport dimensions
         self.focal_length = 1.0
         self.viewport_height = 2.0
-        self.viewport_width = self.viewport_height * (self._image_width / self.image_height)
+        self.viewport_width = self.viewport_height * (
+            self._image_width / self.image_height
+        )
 
         # Calculate the vectors across the horizontal and down the vertical viewport edges
         viewport_u = Vec3(self.viewport_width, 0, 0)
@@ -68,13 +78,13 @@ class Camera:
         viewport_upper_left = vec3_sub(
             vec3_sub(
                 vec3_sub(self.center, Vec3(0, 0, self.focal_length)),
-                vec3_scalar_mul(0.5, viewport_u)
+                vec3_scalar_mul(0.5, viewport_u),
             ),
-            vec3_scalar_mul(0.5, viewport_v)
+            vec3_scalar_mul(0.5, viewport_v),
         )
         self.pixel00_loc = vec3_add(
             viewport_upper_left,
-            vec3_scalar_mul(0.5, vec3_add(self.pixel_delta_u, self.pixel_delta_v))
+            vec3_scalar_mul(0.5, vec3_add(self.pixel_delta_u, self.pixel_delta_v)),
         )
 
     def get_ray(self, i: int, j: int) -> Ray:
@@ -85,8 +95,8 @@ class Camera:
             self.pixel00_loc,
             vec3_add(
                 vec3_scalar_mul(i + offset.x(), self.pixel_delta_u),
-                vec3_scalar_mul(j + offset.y(), self.pixel_delta_v)
-            )
+                vec3_scalar_mul(j + offset.y(), self.pixel_delta_v),
+            ),
         )
 
         ray_origin = self.center
@@ -115,7 +125,7 @@ class Camera:
                 for _ in range(self._samples_per_pixel):
                     r = self.get_ray(i, j)
                     pixel_color = vec3_add(pixel_color, self.__ray_color(r, world))
-                
+
                 pixel_color = vec3_scalar_mul(self.pixel_samples_scale, pixel_color)
                 write_color(pixel_color)
 
@@ -125,7 +135,8 @@ class Camera:
         rec: HitRecord = HitRecord()
 
         if world.hit(r, Interval(0, math.inf), rec):
-            return vec3_scalar_mul(0.5, vec3_add(rec.normal, Color(1, 1, 1)))
+            direction: Vec3 = random_on_hemisphere(rec.normal)
+            return vec3_scalar_mul(0.5, self.__ray_color(Ray(rec.p, direction), world))
 
         unit_direction: Vec3 = unit_vector(r.direction())
         a: float = 0.5 * (unit_direction.y() + 1.0)
