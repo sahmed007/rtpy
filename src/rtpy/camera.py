@@ -20,6 +20,7 @@ class Camera:
     ASPECT_RATIO = 1.0
     IMAGE_WIDTH = 100
     SAMPLES_PER_PIXEL = 10
+    MAX_DEPTH = 10
 
     def __init__(self):
         self._aspect_ratio = self.ASPECT_RATIO
@@ -124,19 +125,26 @@ class Camera:
                 pixel_color = Color(0, 0, 0)
                 for _ in range(self._samples_per_pixel):
                     r = self.get_ray(i, j)
-                    pixel_color = vec3_add(pixel_color, self.__ray_color(r, world))
+                    # pixel_color = vec3_add(pixel_color, self.__ray_color(r, world))
+                    pixel_color += self.__ray_color(r, self.MAX_DEPTH, world)
 
                 pixel_color = vec3_scalar_mul(self.pixel_samples_scale, pixel_color)
                 write_color(pixel_color)
 
         print("\rDone.                 ", file=sys.stderr)
 
-    def __ray_color(self, r: Ray, world: Hittable):
+    def __ray_color(self, r: Ray, depth: int, world: Hittable):
+        # If we've exceeded the ray bounce limit, no more light is gathered
+        if depth <= 0:
+            return Color(0, 0, 0)
+
         rec: HitRecord = HitRecord()
 
         if world.hit(r, Interval(0, math.inf), rec):
             direction: Vec3 = random_on_hemisphere(rec.normal)
-            return vec3_scalar_mul(0.5, self.__ray_color(Ray(rec.p, direction), world))
+            return vec3_scalar_mul(
+                0.5, self.__ray_color(Ray(rec.p, direction), depth - 1, world)
+            )
 
         unit_direction: Vec3 = unit_vector(r.direction())
         a: float = 0.5 * (unit_direction.y() + 1.0)
